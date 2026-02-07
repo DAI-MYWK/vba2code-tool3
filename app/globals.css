@@ -1,0 +1,40 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    @apply bg-white text-slate-900;
+  }
+}
+
+@layer utilities {
+  /* 強調色: 青 */
+  .bg-primary {
+    background-color: #2563EB;
+  }
+  .bg-primary-dark {
+    background-color: #1E40AF;
+  }
+  .text-primary {
+    color: #2563EB;
+  }
+  .hover\:bg-primary-dark:hover {
+    background-color: #1E40AF;
+  }
+  .hover\:bg-primary:hover {
+    background-color: #2563EB;
+  }
+  .border-primary {
+    border-color: #2563EB;
+  }
+  
+  /* ベース: 白系 */
+  .bg-base {
+    background-color: #FFFFFF;
+  }
+  .bg-base-light {
+    background-color: #F8FAFC;
+  }
+  .border-base {
+    border-color: #E2E8F0;
+  }
+}

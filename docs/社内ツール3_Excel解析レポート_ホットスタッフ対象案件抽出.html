@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Excel解析レポート: 社内ツール3_作業用_ホットスタッフ_対象案件抽出.xlsm</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic", "Meiryo", sans-serif;
+    background: #ffffff; color: #1a1a2e; line-height: 1.75; padding: 0;
+  }
+  .page-header {
+    background: linear-gradient(135deg, #0a1628 0%, #1a3a6e 100%);
+    color: #ffffff; padding: 56px 48px 48px;
+  }
+  .page-header h1 { font-size: 28px; font-weight: 700; letter-spacing: 0.02em; margin-bottom: 8px; }
+  .page-header .subtitle { font-size: 14px; color: #94b8e8; font-weight: 400; }
+  .meta-row { display: flex; gap: 32px; margin-top: 24px; flex-wrap: wrap; }
+  .meta-item {
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 8px; padding: 12px 20px; min-width: 180px;
+  }
+  .meta-item .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: #7faad4; margin-bottom: 4px; }
+  .meta-item .value { font-size: 16px; font-weight: 600; color: #ffffff; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 48px 32px 80px; }
+  .toc { background: #f4f7fb; border: 1px solid #d4e0f0; border-radius: 10px; padding: 28px 32px; margin-bottom: 48px; }
+  .toc h2 { font-size: 16px; color: #1a3a6e; margin-bottom: 16px; font-weight: 700; }
+  .toc ol { list-style: none; counter-reset: toc-counter; padding: 0; columns: 2; column-gap: 32px; }
+  .toc li { counter-increment: toc-counter; margin-bottom: 6px; break-inside: avoid; }
+  .toc li a { color: #2a5ea8; text-decoration: none; font-size: 14px; display: flex; align-items: baseline; gap: 8px; }
+  .toc li a:hover { color: #0d3b7a; text-decoration: underline; }
+  .toc li a::before { content: counter(toc-counter, decimal-leading-zero); font-weight: 700; font-size: 12px; color: #5a8dc8; min-width: 22px; }
+  .section { margin-bottom: 56px; scroll-margin-top: 24px; }
+  .section-header { border-left: 4px solid #2a5ea8; padding-left: 16px; margin-bottom: 24px; }
+  .section-header h2 { font-size: 22px; font-weight: 700; color: #0d2b5e; }
+  .section-header p { font-size: 13px; color: #5a7ba5; margin-top: 4px; }
+  h3 { font-size: 17px; font-weight: 700; color: #1a3a6e; margin: 28px 0 12px; padding-bottom: 6px; border-bottom: 2px solid #e4ecf6; }
+  h4 { font-size: 15px; font-weight: 700; color: #2a5ea8; margin: 20px 0 8px; }
+  p, li { font-size: 14.5px; }
+  p { margin-bottom: 12px; }
+  ul, ol { padding-left: 20px; margin-bottom: 12px; }
+  li { margin-bottom: 4px; }
+  strong { color: #0d2b5e; }
+  .table-wrap { overflow-x: auto; margin: 16px 0 24px; border-radius: 8px; border: 1px solid #d4e0f0; }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; white-space: nowrap; }
+  thead th { background: #1a3a6e; color: #ffffff; font-weight: 600; text-align: left; padding: 10px 14px; font-size: 12.5px; }
+  tbody td { padding: 9px 14px; border-bottom: 1px solid #e8eef6; vertical-align: top; }
+  tbody tr:hover { background: #f0f5fc; }
+  tbody tr:nth-child(even) { background: #f8fafd; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  td.code { font-family: "Consolas", "SFMono-Regular", monospace; font-size: 12.5px; color: #2a5ea8; }
+  .card { background: #f8fafd; border: 1px solid #d4e0f0; border-radius: 10px; padding: 20px 24px; margin: 16px 0; }
+  .card.highlight { border-left: 4px solid #2a5ea8; background: #edf3fc; }
+  .card .card-title { font-size: 14px; font-weight: 700; color: #1a3a6e; margin-bottom: 8px; }
+  .code-block {
+    background: #0f1b2d; color: #c8daf0; padding: 20px 24px; border-radius: 8px;
+    font-family: "Consolas", "SFMono-Regular", monospace; font-size: 13px; line-height: 1.6;
+    overflow-x: auto; margin: 12px 0 20px; white-space: pre;
+  }
+  .code-block .kw { color: #6eb5ff; }
+  .code-block .fn { color: #7ee8a8; }
+  .code-block .str { color: #ffd580; }
+  .code-block .cmt { color: #5a7ba5; }
+  .flow { background: #f4f7fb; border: 1px solid #d4e0f0; border-radius: 10px; padding: 28px 32px; margin: 16px 0 24px; }
+  .flow-step { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 4px; }
+  .flow-num {
+    min-width: 32px; height: 32px; background: #2a5ea8; color: #fff; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; margin-top: 2px;
+  }
+  .flow-content { flex: 1; padding-bottom: 16px; border-left: 2px solid #d4e0f0; padding-left: 16px; margin-left: -25px; padding-top: 4px; }
+  .flow-step:last-child .flow-content { border-left: 2px solid transparent; }
+  .flow-content .step-title { font-weight: 700; color: #0d2b5e; font-size: 14px; }
+  .flow-content .step-desc { font-size: 13px; color: #3d5a80; margin-top: 2px; }
+  .badge { display: inline-block; background: #2a5ea8; color: #fff; font-size: 11px; font-weight: 700; padding: 2px 10px; border-radius: 12px; margin-right: 6px; }
+  .badge.green { background: #1a7a4c; }
+  .badge.orange { background: #b87333; }
+  .badge.gray { background: #6b7b8d; }
+  .tag-list { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+  .tag { background: #e4ecf6; color: #1a3a6e; font-size: 12px; padding: 3px 10px; border-radius: 4px; font-weight: 500; }
+  hr { border: none; border-top: 1px solid #d4e0f0; margin: 40px 0; }
+  .page-footer { text-align: center; padding: 32px; color: #8a9ab5; font-size: 12px; border-top: 1px solid #e4ecf6; }
+  @media (max-width: 768px) {
+    .page-header { padding: 32px 20px; }
+    .page-header h1 { font-size: 22px; }
+    .container { padding: 24px 16px 48px; }
+    .toc ol { columns: 1; }
+    table { font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ========== HEADER ========== -->
+<div class="page-header">
+  <h1>Excel解析レポート</h1>
+  <div class="subtitle">社内ツール3_作業用_ホットスタッフ_対象案件抽出.xlsm</div>
+  <div class="meta-row">
+    <div class="meta-item">
+      <div class="label">ファイルサイズ</div>
+      <div class="value">20.9 MB</div>
+    </div>
+    <div class="meta-item">
+      <div class="label">シート数</div>
+      <div class="value">10 シート</div>
+    </div>
+    <div class="meta-item">
+      <div class="label">VBAマクロ</div>
+      <div class="value">あり (56 KB)</div>
+    </div>
+    <div class="meta-item">
+      <div class="label">解析日</div>
+      <div class="value">2026-02-06</div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- ========== 目次 ========== -->
+<div class="toc">
+  <h2>目次</h2>
+  <ol>
+    <li><a href="#sec1">概要 - ツールの目的と全体像</a></li>
+    <li><a href="#sec2">シート構成一覧</a></li>
+    <li><a href="#sec3">CSVシート - 入力データの構造</a></li>
+    <li><a href="#sec4">dataシート - 中間判定処理</a></li>
+    <li><a href="#sec5">非掲載案件抽出シート - コア処理</a></li>
+    <li><a href="#sec6">抜きたい文言シート - テンプレート管理</a></li>
+    <li><a href="#sec7">有料職業紹介確認用シート</a></li>
+    <li><a href="#sec8">個別案件シート - キャンペーン管理</a></li>
+    <li><a href="#sec9">exp / 直雇用exp シート - エクスポート出力</a></li>
+    <li><a href="#sec10">マスタテーブル（掲載店舗・最低賃金）</a></li>
+    <li><a href="#sec11">VBAマクロ構成と推定処理</a></li>
+    <li><a href="#sec12">処理フロー詳細</a></li>
+    <li><a href="#sec13">主要数式パターン一覧</a></li>
+    <li><a href="#sec14">補足情報</a></li>
+  </ol>
+</div>
+
+<!-- ========== 01. 概要 ========== -->
+<div class="section" id="sec1">
+  <div class="section-header">
+    <h2>01. 概要 - ツールの目的と全体像</h2>
+    <p>このExcelツールが何をするものかの説明</p>
+  </div>
+
+  <div class="card highlight">
+    <div class="card-title">ツールの目的</div>
+    <p>
+      このExcelマクロブックは、<strong>株式会社ホットスタッフ</strong>（人材派遣会社）の求人案件データ（CSVインポート）に対して、
+      <strong>求人サイトへの掲載可否を自動判定し、非掲載とすべき案件を抽出する</strong>ためのツールです。
+    </p>
+    <p>
+      派遣・紹介・直雇用など多種の雇用形態の求人データについて、法令（有料職業紹介の規制）・社内ルール（NGワード、年齢表記、最低賃金チェック等）・業務要件（掲載対象店舗の管理、個別キャンペーン管理）に基づいて、
+      掲載すべきでない案件を自動フラグ付けし、非掲載理由を生成します。最終的に、クリーニング済みデータをCSV形式でエクスポートする機能も備えています。
+    </p>
+  </div>
+
+  <h3>ファイル基本情報</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>項目</th><th>値</th></tr></thead>
+      <tbody>
+        <tr><td>ファイル名</td><td>社内ツール3_作業用_ホットスタッフ_対象案件抽出.xlsm</td></tr>
+        <tr><td>ファイルサイズ</td><td class="num">20,946,396 バイト (約 20.9 MB)</td></tr>
+        <tr><td>シート数</td><td class="num">10</td></tr>
+        <tr><td>VBAマクロ</td><td>あり（Module1 + Sheet1-10 + ThisWorkbook）</td></tr>
+        <tr><td>名前付き範囲</td><td class="num">0</td></tr>
+        <tr><td>最大データ行数</td><td class="num">25,002行（CSVシート）</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ========== 02. シート構成一覧 ========== -->
+<div class="section" id="sec2">
+  <div class="section-header">
+    <h2>02. シート構成一覧</h2>
+    <p>全10シートの役割・規模・特徴</p>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>No.</th><th>シート名</th><th>役割</th><th>行数</th><th>列数</th><th>数式</th><th>保護</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="num">1</td><td><strong>CSV</strong></td><td><span class="badge">入力</span> 求人原データ</td><td class="num">25,002</td><td class="num">57 (A-BE)</td><td>なし</td><td>なし</td></tr>
+        <tr><td class="num">2</td><td><strong>抜きたい文言</strong></td><td><span class="badge orange">マスタ</span> テンプレート文言</td><td class="num">1,130</td><td class="num">17 (A-Q)</td><td>一部あり</td><td>なし</td></tr>
+        <tr><td class="num">3</td><td><strong>exp</strong></td><td><span class="badge green">出力</span> エクスポート用</td><td class="num">2</td><td class="num">57 (A-BE)</td><td>全列数式</td><td>なし</td></tr>
+        <tr><td class="num">4</td><td><strong>有料職業紹介確認用</strong></td><td><span class="badge green">出力</span> 有料職業紹介案件</td><td class="num">18,995</td><td class="num">57 (A-BE)</td><td>なし（VBA出力）</td><td>なし</td></tr>
+        <tr><td class="num">5</td><td><strong>非掲載案件抽出</strong></td><td><span class="badge">処理</span> 非掲載判定メイン</td><td class="num">25,002</td><td class="num">41 (A-AO)</td><td>多数あり</td><td>なし</td></tr>
+        <tr><td class="num">6</td><td><strong>個別案件</strong></td><td><span class="badge">処理</span> 個別キャンペーン管理</td><td class="num">22</td><td class="num">21 (A-U)</td><td>あり</td><td>なし</td></tr>
+        <tr><td class="num">7</td><td><strong>data</strong></td><td><span class="badge">処理</span> 中間判定テーブル</td><td class="num">25,002</td><td class="num">10 (A-J)</td><td>全列数式</td><td>なし</td></tr>
+        <tr><td class="num">8</td><td><strong>直雇用exp</strong></td><td><span class="badge green">出力</span> 直雇用エクスポート</td><td class="num">2</td><td class="num">57 (A-BE)</td><td>全列数式</td><td>なし</td></tr>
+        <tr><td class="num">9</td><td><strong>掲載店舗</strong></td><td><span class="badge orange">マスタ</span> 店舗マスタ</td><td class="num">126</td><td class="num">5 (A-E)</td><td>1式</td><td>なし</td></tr>
+        <tr><td class="num">10</td><td><strong>最低賃金</strong></td><td><span class="badge orange">マスタ</span> 都道府県別最低賃金</td><td class="num">48</td><td class="num">6 (A-F)</td><td>あり</td><td>なし</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ========== 03. CSVシート ========== -->
+<div class="section" id="sec3">
+  <div class="section-header">
+    <h2>03. CSVシート - 入力データの構造</h2>
+    <p>求人管理システムからインポートされる原データ（25,002行 x 57列）</p>
+  </div>
+
+  <p>
+    CSVシートは、ホットスタッフの求人管理システムからエクスポートされたCSVデータを貼り付ける入力シートです。
+    数式は含まれておらず、VBAマクロまたは手動でCSVデータが取り込まれます。各行が1件の求人案件を表し、全57列（A列〜BE列）にわたって求人情報が格納されます。
+  </p>
+
+  <h3>全カラム定義（57列）</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>列</th><th>ヘッダー名</th><th>内容説明</th></tr></thead>
+      <tbody>
+        <tr><td>A</td><td>データ区分</td><td>データの分類コード</td></tr>
+        <tr><td>B</td><td>求人コード</td><td>案件を一意に識別するコード（主キー）</td></tr>
+        <tr><td>C</td><td>拠点コード</td><td>担当支社/店舗の識別コード（[0901]形式）</td></tr>
+        <tr><td>D</td><td>企業名</td><td>求人を出している企業の名称</td></tr>
+        <tr><td>E</td><td>部署</td><td>求人対象の部署名</td></tr>
+        <tr><td>F</td><td>求人タイトル</td><td>求人サイトに表示されるタイトル</td></tr>
+        <tr><td>G</td><td>業種(職種)小カテゴリコード</td><td>職種分類コード</td></tr>
+        <tr><td>H</td><td>業種(職種)備考</td><td>職種に関する補足テキスト</td></tr>
+        <tr><td>I</td><td>勤務地(郵便番号)</td><td>勤務地の郵便番号</td></tr>
+        <tr><td>J</td><td>勤務地(市区町村コード)</td><td>勤務地の市区町村コード</td></tr>
+        <tr><td>K</td><td>勤務地(都道府県)</td><td>勤務地の都道府県名</td></tr>
+        <tr><td>L</td><td>勤務地(市区町村)</td><td>勤務地の市区町村名</td></tr>
+        <tr><td>M</td><td>勤務地(番地、ビル名)</td><td>勤務地の詳細住所</td></tr>
+        <tr><td>N</td><td>勤務地備考</td><td>勤務地に関する備考</td></tr>
+        <tr><td>O</td><td>勤務地(企業)住所</td><td>企業本社の住所</td></tr>
+        <tr><td>P</td><td>給与区分</td><td>時給/日給/月給の区分</td></tr>
+        <tr><td>Q</td><td>給与金額(From)</td><td>給与下限額（最低賃金チェックに使用）</td></tr>
+        <tr><td>R</td><td>給与金額(To)</td><td>給与上限額</td></tr>
+        <tr><td>S</td><td>給与金額区分</td><td>給与金額の区分情報</td></tr>
+        <tr><td>T</td><td>給与備考</td><td>給与に関する備考</td></tr>
+        <tr><td>U</td><td>月収</td><td>月収の目安金額</td></tr>
+        <tr><td>V</td><td>月収例</td><td>月収の計算例</td></tr>
+        <tr><td>W-X</td><td>最寄駅(路線名/駅名)</td><td>最寄駅情報</td></tr>
+        <tr><td>Y</td><td>距離</td><td>最寄駅からの距離</td></tr>
+        <tr><td>Z</td><td>最寄駅備考</td><td>最寄駅の補足情報</td></tr>
+        <tr><td>AA-AH</td><td>勤務時間1-4(From/To)</td><td>勤務時間帯（最大4パターン）</td></tr>
+        <tr><td>AI</td><td>勤務時間備考</td><td>勤務時間の備考</td></tr>
+        <tr><td>AJ</td><td>勤務形態</td><td>勤務形態の種別</td></tr>
+        <tr><td>AK</td><td>休日</td><td>休日設定</td></tr>
+        <tr><td>AL</td><td>休日備考</td><td>休日に関する備考</td></tr>
+        <tr><td>AM</td><td>資格・経験</td><td>必要な資格・経験</td></tr>
+        <tr><td>AN</td><td>資格備考</td><td>資格に関する備考</td></tr>
+        <tr><td>AO</td><td>雇用形態</td><td>TS/PS/TP/PL/SL等のコード（判定の核心）</td></tr>
+        <tr><td>AP</td><td>期間</td><td>雇用期間</td></tr>
+        <tr><td>AQ</td><td>期間備考</td><td>期間に関する備考</td></tr>
+        <tr><td>AR</td><td>仕事内容</td><td>仕事内容の詳細テキスト（NGワード検索対象）</td></tr>
+        <tr><td>AS</td><td>その他タイトル</td><td>その他情報のタイトル</td></tr>
+        <tr><td>AT</td><td>その他内容</td><td>その他の詳細情報</td></tr>
+        <tr><td>AU</td><td>メモ</td><td>社内メモ</td></tr>
+        <tr><td>AV</td><td>職場環境</td><td>職場環境の説明</td></tr>
+        <tr><td>AW</td><td>特徴</td><td>求人の特徴タグ</td></tr>
+        <tr><td>AX</td><td>動画ID</td><td>紹介動画のID</td></tr>
+        <tr><td>AY</td><td>学歴</td><td>学歴要件</td></tr>
+        <tr><td>AZ</td><td>PR・職場情報</td><td>PR文と職場情報</td></tr>
+        <tr><td>BA</td><td>事業内容</td><td>企業の事業内容</td></tr>
+        <tr><td>BB</td><td>採用予定人数</td><td>採用予定人数</td></tr>
+        <tr><td>BC</td><td>福利厚生制度</td><td>福利厚生の詳細テキスト</td></tr>
+        <tr><td>BD</td><td>公開区分</td><td>公開/非公開の区分</td></tr>
+        <tr><td>BE</td><td>削除区分</td><td>削除済みかどうかの区分</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ========== 04. dataシート ========== -->
+<div class="section" id="sec4">
+  <div class="section-header">
+    <h2>04. dataシート - 中間判定処理</h2>
+    <p>CSVの各行に対して掲載可否やフラグを計算する中間テーブル（25,002行 x 10列）</p>
+  </div>
+
+  <p>
+    dataシートはCSVシートと行が1対1で対応し、各求人案件に対して複数の判定を行う中間処理テーブルです。
+    全セルが数式で構成されており、CSVシートのデータを参照して自動計算されます。
+  </p>
+
+  <h3>カラム定義と数式ロジック</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>列</th><th>ヘッダー</th><th>処理内容</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>A</strong></td>
+          <td>掲載するか</td>
+          <td>
+            雇用形態がTS/PS/TP/PL/SLの場合、掲載店舗マスタに当該拠点が含まれるかCOUNTIFで判定。
+            それ以外の雇用形態は別ルートで判定。結果は0/1フラグ。
+          </td>
+        </tr>
+        <tr>
+          <td><strong>B-E</strong></td>
+          <td>列1-4</td>
+          <td>
+            CSVの仕事内容(AR列)、PR・職場情報(AZ列)、福利厚生(BC列)等のテキストフィールドを参照。
+            VBAのReplace処理で不要文言を除去した後のクリーニング済みテキストが格納される。
+          </td>
+        </tr>
+        <tr>
+          <td><strong>F</strong></td>
+          <td>企業名</td>
+          <td>
+            有料職業紹介（PL/SL）案件の場合、企業名に「(」「（」「有職」等の表記があるかチェック。
+            正式な法人名表記がされているかの判定フラグ。
+          </td>
+        </tr>
+        <tr>
+          <td><strong>G</strong></td>
+          <td>直雇用</td>
+          <td>
+            雇用形態がTS/PS/TP/PL/SL以外かつ掲載店舗に含まれない場合、直雇用案件としてフラグ立て。
+          </td>
+        </tr>
+        <tr>
+          <td><strong>H</strong></td>
+          <td>支社名</td>
+          <td>
+            拠点コードをキーに掲載店舗マスタからXLOOKUPで支社名を取得。
+          </td>
+        </tr>
+        <tr>
+          <td><strong>I</strong></td>
+          <td>個別キャンペーン</td>
+          <td>
+            企業名に「【個別キャンペーン】」が含まれるかCOUNTIFでチェック。
+          </td>
+        </tr>
+        <tr>
+          <td><strong>J</strong></td>
+          <td>最低賃金</td>
+          <td>
+            勤務地都道府県をキーに最低賃金マスタからXLOOKUPで最低賃金額を取得し、
+            給与金額(From)と比較。最低賃金を下回っている場合は0を返す。
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ========== 05. 非掲載案件抽出シート ========== -->
+<div class="section" id="sec5">
+  <div class="section-header">
+    <h2>05. 非掲載案件抽出シート - コア処理</h2>
+    <p>掲載不可案件を判定し、非掲載理由を自動生成する中核シート（25,002行 x 41列）</p>
+  </div>
+
+  <p>
+    このシートがツール全体のコアロジックを担います。CSVの各行に対して、左半分（A-T列）と右半分（W-AO列）の2系統の判定ロジックを持ち、
+    それぞれ異なる観点で非掲載判定を行います。
+  </p>
+
+  <h3>左側ブロック（A-T列）- 派遣案件の判定</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>列</th><th>ヘッダー</th><th>処理内容</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>A</strong></td>
+          <td>支社・雇用形態・非掲載指定</td>
+          <td>
+            雇用形態がTS/PS/TP/PL/SLの場合、掲載店舗マスタとの突合結果をフラグ出力（0 or 1）。
+            対象外の雇用形態は空白。
+          </td>
+        </tr>
+        <tr>
+          <td><strong>C</strong></td>
+          <td>支店</td>
+          <td>拠点コードからXLOOKUPで掲載店舗マスタの店舗名を取得。</td>
+        </tr>
+        <tr>
+          <td><strong>D</strong></td>
+          <td>非掲載理由（自動生成）</td>
+          <td>
+            A列=1かつE列=0の場合、以下の優先順位で非掲載理由を自動生成:
+            <ul>
+              <li>有料職業紹介案件で企業名が不正確</li>
+              <li>職種名が16文字を超過</li>
+              <li>「入社祝い金」等のNGワードを含む</li>
+              <li>「歳以上の方大歓迎」「歳以下の方大歓迎」等の年齢表記を含む</li>
+              <li>最低賃金を下回っている</li>
+              <li>非掲載フラグ文言に該当</li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <td><strong>E</strong></td>
+          <td>有料職業紹介確認用にあるか</td>
+          <td>有料職業紹介確認用シートに当該案件が存在するかの照合フラグ。</td>
+        </tr>
+        <tr>
+          <td><strong>F</strong></td>
+          <td>有料職業紹介確認用</td>
+          <td>PL/SL形態の場合、data[掲載するか]フラグと照合。</td>
+        </tr>
+        <tr>
+          <td><strong>H</strong></td>
+          <td>日付</td>
+          <td>処理実行日（配列数式で設定）。</td>
+        </tr>
+        <tr>
+          <td><strong>I-L</strong></td>
+          <td>非掲載案件/支社名/非掲載理由/企業名</td>
+          <td>非掲載と判定された案件の詳細情報を抽出。</td>
+        </tr>
+        <tr>
+          <td><strong>M</strong></td>
+          <td>（仕事内容参照）</td>
+          <td>求人コードからCSVの仕事内容(AR列)をVLOOKUPで取得。</td>
+        </tr>
+        <tr>
+          <td><strong>N-S</strong></td>
+          <td>不可/規制あり/同時募集/他店舗/ネイルNG/タトゥーNG</td>
+          <td>
+            仕事内容テキスト内に各NGワードが含まれるかFIND関数でチェック。
+            該当する場合はワード名を返す。
+          </td>
+        </tr>
+        <tr>
+          <td><strong>T</strong></td>
+          <td>NGワード</td>
+          <td>N-S列の結果をTEXTJOINで連結し、該当NGワードを一覧表示。</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>右側ブロック（W-AO列）- 直雇用案件の判定</h3>
+  <p>
+    左側ブロックと同様のロジックですが、直雇用案件（TS/PS/TP/PL/SL以外）を対象とした判定を行います。
+    判定項目は同様に、職種名の文字数チェック、入社祝い金NGワードチェック、年齢表記チェック、最低賃金チェック等を行い、
+    非掲載理由を自動生成します。
+  </p>
+</div>
+
+<!-- ========== 06. 抜きたい文言シート ========== -->
+<div class="section" id="sec6">
+  <div class="section-header">
+    <h2>06. 抜きたい文言シート - テンプレート管理</h2>
+    <p>求人テキストから除去すべき定型文言のマスタテーブル（1,130行 x 17列）</p>
+  </div>
+
+  <p>
+    このシートには、求人テキストから自動除去すべき定型文言（テンプレート文）が蓄積されています。
+    各支社が求人テキストに挿入するWEB応募案内、LINE登録案内、福利厚生テンプレート等の宣伝文句が登録されており、
+    VBAのReplace処理でこれらの文言を一括除去するためのマスタとして使われます。
+  </p>
+
+  <h3>カラム構成</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>列</th><th>ヘッダー</th><th>内容</th></tr></thead>
+      <tbody>
+        <tr><td><strong>A</strong></td><td>（テンプレート文言1）</td><td>WEB応募案内、LINE登録案内等の長文テンプレート</td></tr>
+        <tr><td><strong>B</strong></td><td>福利厚生</td><td>福利厚生セクションのテンプレート文</td></tr>
+        <tr><td><strong>C</strong></td><td>（数式/テンプレート）</td><td>装飾ライン等の定型文言（数式で生成されるものも含む）</td></tr>
+        <tr><td><strong>D</strong></td><td>PR/職場情報</td><td>PR・職場情報欄のテンプレート文</td></tr>
+        <tr><td><strong>E</strong></td><td>（テンプレート文言2）</td><td>職場見学案内、LINE案内等の文言</td></tr>
+        <tr><td><strong>F</strong></td><td>応募資格</td><td>応募資格欄のテンプレート文</td></tr>
+        <tr><td><strong>G</strong></td><td>（応募資格テンプレート）</td><td>「手先が器用な方」「元気な方歓迎」等の定型表現</td></tr>
+        <tr><td><strong>J</strong></td><td>非掲載フラグ文言</td><td>非掲載判定に使用するキーワード</td></tr>
+        <tr><td><strong>K</strong></td><td>年齢制限文言</td><td>「歳以上の方大歓迎」「歳以下の方大歓迎」等の年齢表記NG文言</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-title">登録されている文言の例</div>
+    <p>
+      WEB応募の案内文（「WEBエントリー24時間受付中」）、LINE公式アカウント案内、かんたんWEB登録への誘導リンク、
+      求人一覧ページへの誘導リンク、福利厚生の定型説明文、P-コンシェル案内、You&Meボーナス案内、
+      ヒアリングシート入力案内、装飾文字列（罫線、顔文字等）など、多岐にわたります。
+      これらは各支店ごとに異なるバリエーションが登録されています。
+    </p>
+  </div>
+</div>
+
+<!-- ========== 07. 有料職業紹介確認用シート ========== -->
+<div class="section" id="sec7">
+  <div class="section-header">
+    <h2>07. 有料職業紹介確認用シート</h2>
+    <p>有料職業紹介に該当する案件のみを抽出した出力シート（18,995行 x 57列）</p>
+  </div>
+
+  <p>
+    このシートには、VBAマクロによって有料職業紹介案件（雇用形態がPL/SL）が自動抽出されます。
+    CSVシートと同じカラム構成（57列）を持ち、該当する案件のみが転記されます。
+    非掲載案件抽出シートのF列（有料職業紹介フラグ）と連動して使用されます。
+  </p>
+
+  <p>
+    有料職業紹介事業は法的規制が厳しく、企業名の正確な表記が求められるため、
+    このシートで企業名の妥当性を確認する運用がされています。
+  </p>
+</div>
+
+<!-- ========== 08. 個別案件シート ========== -->
+<div class="section" id="sec8">
+  <div class="section-header">
+    <h2>08. 個別案件シート - キャンペーン管理</h2>
+    <p>個別キャンペーン案件の管理と差分チェック（22行 x 21列）</p>
+  </div>
+
+  <p>
+    個別キャンペーンとして特別管理される案件を追跡するためのシートです。
+    左側ブロック（A-F列）が派遣案件の支社単位の管理、右側ブロック（P-U列）が直雇用案件の個別管理に使われます。
+  </p>
+
+  <h3>左側ブロック（A-F列）- 支社別依頼管理</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>列</th><th>ヘッダー</th><th>処理内容</th></tr></thead>
+      <tbody>
+        <tr><td><strong>A</strong></td><td>支社名</td><td>依頼元の支社名（スプレッドシートから貼り付け）</td></tr>
+        <tr><td><strong>B</strong></td><td>依頼案件数</td><td>当該支社からの依頼件数</td></tr>
+        <tr><td><strong>D</strong></td><td>（支社名ユニーク）</td><td>重複排除された支社名一覧</td></tr>
+        <tr><td><strong>E</strong></td><td>依頼総数</td><td>SUMIFSで支社別の依頼合計を集計</td></tr>
+        <tr><td><strong>F</strong></td><td>CSVにある件数</td><td>COUNTIFでCSV内の該当件数をカウント</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>右側ブロック（Q-U列）- 直雇用個別案件</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>列</th><th>ヘッダー</th><th>処理内容</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Q</strong></td><td>案件番号</td><td>直雇用案件の案件番号（12桁数値）</td></tr>
+        <tr><td><strong>R</strong></td><td>支社名</td><td>担当支社名</td></tr>
+        <tr><td><strong>S</strong></td><td>（CSVチェック）</td><td>COUNTIFSで直雇用expシートに案件が存在するか確認</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-title">条件付き書式（4ルール）</div>
+    <p>
+      D列（支社名）が黄色: 依頼件数とCSV件数に差分がある支社。
+      J列が黄色: 依頼にない支社がCSVに存在した場合。
+      Q列が黄色: CSVに案件が存在しない場合。
+      これらのビジュアルフィードバックにより、データの不整合を即座に把握できます。
+    </p>
+  </div>
+</div>
+
+<!-- ========== 09. exp / 直雇用exp シート ========== -->
+<div class="section" id="sec9">
+  <div class="section-header">
+    <h2>09. exp / 直雇用exp シート - エクスポート出力</h2>
+    <p>クリーニング済みデータのCSVエクスポート用テンプレート</p>
+  </div>
+
+  <p>
+    <strong>exp</strong>シートと<strong>直雇用exp</strong>シートは、いずれも2行構成のエクスポート用テンプレートです。
+  </p>
+
+  <h3>構造</h3>
+
+  <h4>1行目（ヘッダー行）</h4>
+  <p>
+    全57列（A1-BE1）に <code>='CSV'!A1</code> 〜 <code>='CSV'!BE1</code> の数式が設定されており、
+    CSVシートのヘッダー行をそのまま参照しています。
+  </p>
+
+  <h4>2行目（データ行 - 配列数式）</h4>
+  <p>
+    2行目には配列数式（ArrayFormula）が設定されており、VBAマクロの実行時に、
+    判定結果に基づいてフィルタリングされたデータが展開されます。
+    主要なテキストフィールド（仕事内容、資格備考、雇用形態、その他タイトル、PR・職場情報、福利厚生制度）は、
+    「抜きたい文言」シートに登録されたテンプレート文言がReplace処理で除去されたクリーニング済みテキストが出力されます。
+  </p>
+
+  <div class="card highlight">
+    <div class="card-title">expシートとの違い</div>
+    <p>
+      <strong>exp</strong>: 派遣案件（TS/PS/TP/PL/SL形態）の掲載可能案件を出力。<br>
+      <strong>直雇用exp</strong>: 直雇用案件（上記以外の雇用形態）の掲載可能案件を出力。
+      加えて、直雇用expでは拠点コード(C列)と企業名(D列)にも配列数式が適用されており、
+      特定のフォーマット調整が行われます。
+    </p>
+  </div>
+</div>
+
+<!-- ========== 10. マスタテーブル ========== -->
+<div class="section" id="sec10">
+  <div class="section-header">
+    <h2>10. マスタテーブル（掲載店舗・最低賃金）</h2>
+    <p>判定処理で参照されるマスタデータ</p>
+  </div>
+
+  <h3>掲載店舗マスタ（126行）</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>列</th><th>ヘッダー</th><th>内容</th></tr></thead>
+      <tbody>
+        <tr><td><strong>A</strong></td><td>ブランド+店舗名</td><td>「株式会社ホットスタッフ○○」の正式名称（例: 株式会社ホットスタッフ一宮）</td></tr>
+        <tr><td><strong>B</strong></td><td>拠点コード</td><td>[0901]形式の拠点識別コード（125店舗分）</td></tr>
+        <tr><td><strong>E</strong></td><td>（CSV件数）</td><td>=COUNTA(CSV[データ区分]) でCSVの全行数をカウント</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    125の店舗（拠点コード[0901]〜[1034]）が登録されています。
+    dataシートのXLOOKUPおよび非掲載案件抽出シートのCOUNTIF/XLOOKUPから参照され、
+    案件の拠点が掲載対象店舗に含まれるかの判定に使われます。
+  </p>
+
+  <h3>最低賃金マスタ（48行 = 47都道府県 + ヘッダー）</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>列</th><th>ヘッダー</th><th>内容</th></tr></thead>
+      <tbody>
+        <tr><td><strong>A</strong></td><td>都道府県名</td><td>都道府県名（北海道〜沖縄県）</td></tr>
+        <tr><td><strong>B</strong></td><td>最低賃金</td><td>新最低賃金額（2025年改定後、例: 東京都 1,226円）</td></tr>
+        <tr><td><strong>C</strong></td><td>発効日（予定）</td><td>新最低賃金の発効日</td></tr>
+        <tr><td><strong>D</strong></td><td>（適用最低賃金）</td><td>=IF(C&lt;=TODAY(), B, F) で発効日に応じて新旧を自動切替</td></tr>
+        <tr><td><strong>E</strong></td><td>都道府県</td><td>都道府県名（参照用）</td></tr>
+        <tr><td><strong>F</strong></td><td>最低賃金</td><td>旧最低賃金額（改定前の額）</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-title">最低賃金の自動切替ロジック</div>
+    <p>
+      D列の数式 <code>=IF(C&lt;=TODAY(), B, F)</code> により、発効日が到来していれば新最低賃金（B列）を、
+      未到来であれば旧最低賃金（F列）を自動的に適用します。
+      dataシートのJ列からXLOOKUPで参照され、求人の給与額が最低賃金以上かの判定に使用されます。
+    </p>
+  </div>
+</div>
+
+<!-- ========== 11. VBAマクロ構成 ========== -->
+<div class="section" id="sec11">
+  <div class="section-header">
+    <h2>11. VBAマクロ構成と推定処理</h2>
+    <p>VBAバイナリから抽出された情報に基づく処理内容の推定</p>
+  </div>
+
+  <h3>モジュール構成</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>モジュール種別</th><th>モジュール名</th><th>推定機能</th></tr></thead>
+      <tbody>
+        <tr><td><span class="badge">標準モジュール</span></td><td>Module1</td><td>メイン処理ロジック（CSV取込・テキストクリーニング・エクスポート）</td></tr>
+        <tr><td><span class="badge gray">ドキュメント</span></td><td>Sheet1〜Sheet10</td><td>各シートのイベントハンドラ（ボタンクリック等）</td></tr>
+        <tr><td><span class="badge gray">ドキュメント</span></td><td>ThisWorkbook</td><td>ブックレベルのイベントハンドラ</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>検出されたVBAキーワード・パターン</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>カテゴリ</th><th>検出項目</th><th>推定用途</th></tr></thead>
+      <tbody>
+        <tr><td>パフォーマンス制御</td><td>ScreenUpdating, EnableEvents, xlCalculationManual/Automatic</td><td>処理中の画面更新・イベント・再計算を停止して高速化</td></tr>
+        <tr><td>時間計測</td><td>Timer, startTime, endTime, elapsedTime</td><td>処理の実行時間を計測してMsgBoxで表示</td></tr>
+        <tr><td>データ操作</td><td>Cells, Range, Rows, Columns, .Value, ClearContents</td><td>セルの値取得・設定・クリア</td></tr>
+        <tr><td>テキスト処理</td><td>Replace, NEWLINE_MARKER, Chr(13), Chr(10), vbCrLf</td><td>改行コードの変換・テンプレート文言の除去</td></tr>
+        <tr><td>配列操作</td><td>csvData, UBound, IsEmpty</td><td>CSVデータを配列に読み込んで高速処理</td></tr>
+        <tr><td>ループ制御</td><td>For i, Next, Dim, As Variant/Long/Double</td><td>データ行のループ処理</td></tr>
+        <tr><td>シート参照</td><td>Sheets("..."), ThisWorkbook, Worksheet</td><td>複数シート間のデータ転記</td></tr>
+        <tr><td>ユーザー通知</td><td>MsgBox, vbInformation</td><td>処理完了通知（経過時間表示）</td></tr>
+        <tr><td>書式変換</td><td>Format, 0.00</td><td>経過時間の秒数を小数2桁で表示</td></tr>
+        <tr><td>範囲参照</td><td>Range("E1"), Range("B:E"), xlUp</td><td>データ範囲の動的取得（最終行検出にxlUp使用）</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>推定される主要Sub/Functionプロシージャ</h3>
+  <p>
+    バイナリから完全なソースコードは取得できませんが、検出されたキーワードの組み合わせから、
+    以下のような処理が Module1 に実装されていると推定されます。
+  </p>
+
+  <div class="card">
+    <div class="card-title">推定プロシージャ構成</div>
+    <ol>
+      <li><strong>メイン処理プロシージャ</strong>: ScreenUpdating/EnableEvents/Calculationを制御し、Timer で処理時間を計測。CSVデータを配列（csvData）に読み込み、For ループで全行を処理。</li>
+      <li><strong>テキストクリーニング処理</strong>: 「抜きたい文言」シートの文言リストを使い、Replace関数で求人テキストから定型文言を一括除去。改行コード（vbCrLf/vbLf/vbCr）をNEWLINE_MARKERに置換して保持。</li>
+      <li><strong>データ転記・出力処理</strong>: 判定結果に基づき、expシート・直雇用expシート・有料職業紹介確認用シートへデータを転記。ClearContentsで既存データをクリアしてから新データを書き込み。</li>
+      <li><strong>完了通知</strong>: 処理完了後、MsgBox で経過時間（Format(elapsedTime, "0.00")秒）を表示。</li>
+    </ol>
+  </div>
+</div>
+
+<!-- ========== 12. 処理フロー詳細 ========== -->
+<div class="section" id="sec12">
+  <div class="section-header">
+    <h2>12. 処理フロー詳細</h2>
+    <p>CSVインポートから最終出力までの全体フロー</p>
+  </div>
+
+  <div class="flow">
+    <div class="flow-step">
+      <div class="flow-num">1</div>
+      <div class="flow-content">
+        <div class="step-title">CSVデータの取り込み</div>
+        <div class="step-desc">求人管理システムからエクスポートしたCSVデータを「CSV」シートに貼り付け（手動またはVBA）。最大25,000件の求人案件データ（57列）が格納される。</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">2</div>
+      <div class="flow-content">
+        <div class="step-title">中間判定の自動計算（dataシート）</div>
+        <div class="step-desc">CSVの各行に対して、掲載可否フラグ（A列）、企業名チェック（F列）、直雇用判定（G列）、支社名取得（H列）、個別キャンペーンチェック（I列）、最低賃金チェック（J列）が自動計算される。</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">3</div>
+      <div class="flow-content">
+        <div class="step-title">非掲載判定の実行（非掲載案件抽出シート）</div>
+        <div class="step-desc">
+          dataシートとCSVシートの値を参照し、以下の非掲載条件を数式で判定:
+          雇用形態チェック（TS/PS/TP/PL/SLの分類）、掲載対象店舗の確認、有料職業紹介の企業名妥当性、
+          職種名16文字チェック、入社祝い金等NGワード、年齢表記NG、最低賃金違反、非掲載フラグ文言チェック。
+          各NGワード（不可/規制あり/同時募集/他店舗/ネイルNG/タトゥーNG）も個別チェック。
+        </div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">4</div>
+      <div class="flow-content">
+        <div class="step-title">個別案件の突合チェック（個別案件シート）</div>
+        <div class="step-desc">スプレッドシートから貼り付けた個別キャンペーン案件の依頼リストと、CSVデータを突合。支社別の依頼件数とCSV件数の差分を検出し、条件付き書式でハイライト表示。</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">5</div>
+      <div class="flow-content">
+        <div class="step-title">VBAマクロによるテキストクリーニング</div>
+        <div class="step-desc">VBAマクロを実行すると、「抜きたい文言」シートに登録された1,000件以上のテンプレート文言が、求人テキスト（仕事内容、資格備考、PR・職場情報、福利厚生等）からReplace処理で自動除去される。改行コードはNEWLINE_MARKERに一時変換して保持。</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">6</div>
+      <div class="flow-content">
+        <div class="step-title">エクスポートデータの生成</div>
+        <div class="step-desc">
+          判定結果に基づき、掲載可能な案件のみが抽出される:
+          <strong>expシート</strong>: 派遣案件（TS/PS/TP/PL/SL）のクリーニング済みデータ。
+          <strong>直雇用expシート</strong>: 直雇用案件のクリーニング済みデータ。
+          <strong>有料職業紹介確認用シート</strong>: 有料職業紹介案件の一覧。
+        </div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">7</div>
+      <div class="flow-content">
+        <div class="step-title">処理完了・結果通知</div>
+        <div class="step-desc">VBAマクロの処理完了後、MsgBoxで経過時間が表示される。非掲載案件抽出シートで非掲載理由の確認、個別案件シートで差分確認を行い、問題がなければエクスポートデータを求人サイトにアップロードする。</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 13. 主要数式パターン一覧 ========== -->
+<div class="section" id="sec13">
+  <div class="section-header">
+    <h2>13. 主要数式パターン一覧</h2>
+    <p>各シートで使用されている代表的な数式とその目的</p>
+  </div>
+
+  <h3>掲載可否判定（data!A列 / 非掲載案件抽出!A列）</h3>
+  <div class="code-block"><span class="kw">=IF</span>(CSV[[#This Row],[求人コード]]="","",
+  <span class="kw">IF</span>(<span class="kw">OR</span>(CSV[[#This Row],[雇用形態]]="TS", ...,"SL"),
+    <span class="kw">IF</span>(<span class="kw">COUNTIF</span>(掲載店舗!B:B, CSV[[#This Row],[拠点コード]]) > 0, 1, 0),
+    <span class="cmt">' 直雇用の場合は別ルート判定</span>
+  ))</div>
+  <p>雇用形態コード（TS/PS/TP/PL/SL）を判別し、掲載店舗マスタとの突合で掲載可否を決定。</p>
+
+  <h3>非掲載理由の自動生成（非掲載案件抽出!D列）</h3>
+  <div class="code-block"><span class="kw">=IF</span>(A2="","",<span class="kw">IF</span>(<span class="kw">AND</span>(A2=1, E2=0),
+  <span class="kw">SUBSTITUTE</span>(
+    <span class="kw">IF</span>(F2=1, <span class="str">"有料職業紹介案件だが、企業名が正確ではないため"</span>,
+    <span class="kw">IF</span>(data[[#This Row],[企業名]]=0, <span class="str">"有料職業紹介案件だが、企業名が正確ではないため"</span>,
+    <span class="kw">IF</span>(<span class="kw">COUNTIF</span>(CSV[[#This Row],[業種(職種)備考]], <span class="str">"*16文字*"</span>)>0, <span class="str">"職種名が適切でないため"</span>,
+    <span class="cmt">... 入社祝い金 / 年齢表記 / 最低賃金 等のチェックが続く ...</span>
+  ))),"$","")))</div>
+
+  <h3>企業名チェック（data!F列）</h3>
+  <div class="code-block"><span class="kw">=IF</span>(<span class="kw">OR</span>(CSV[[#This Row],[雇用形態]]="PL", CSV[[#This Row],[雇用形態]]="SL"),
+  <span class="kw">IF</span>(<span class="kw">OR</span>(
+    <span class="kw">COUNTIF</span>(CSV[[#This Row],[企業名]], <span class="str">"*(*"</span>) > 0,
+    <span class="kw">COUNTIF</span>(CSV[[#This Row],[企業名]], <span class="str">"*（*"</span>) > 0,
+    <span class="kw">COUNTIF</span>(CSV[[#This Row],[企業名]], <span class="str">"*有職*"</span>) > 0,
+    <span class="cmt">... 法人名表記パターンのチェック ...</span>
+  ), 1, 0), "")</div>
+
+  <h3>最低賃金チェック（data!J列）</h3>
+  <div class="code-block"><span class="kw">=IF</span>(CSV[[#This Row],[求人コード]]="","",
+  <span class="kw">IF</span>(<span class="fn">_xlfn.XLOOKUP</span>(
+    CSV[[#This Row],[勤務地(都道府県)]],
+    最低賃金!$A$2:$A$48,
+    最低賃金!$D$2:$D$48, "", 0
+  ) &lt;= CSV[[#This Row],[給与金額(From)]], 1, 0))</div>
+
+  <h3>NGワード個別チェック（非掲載案件抽出!N-S列）</h3>
+  <div class="code-block"><span class="kw">=IF</span>(<span class="kw">IFERROR</span>(<span class="kw">FIND</span>(N$1, $M2, 1), 0) > 0, N$1, "")</div>
+  <p>ヘッダー行のワード（不可/規制あり/同時募集/他店舗/ネイルNG/タトゥーNG）が仕事内容テキストに含まれるか検索。</p>
+
+  <h3>NGワード集約（非掲載案件抽出!T列）</h3>
+  <div class="code-block"><span class="kw">=</span><span class="fn">_xlfn.TEXTJOIN</span>(",", TRUE, N2:S2)</div>
+
+  <h3>最低賃金の新旧自動切替（最低賃金!D列）</h3>
+  <div class="code-block"><span class="kw">=IF</span>(C2 &lt;= <span class="fn">TODAY</span>(), B2, F2)</div>
+</div>
+
+<!-- ========== 14. 補足情報 ========== -->
+<div class="section" id="sec14">
+  <div class="section-header">
+    <h2>14. 補足情報</h2>
+    <p>セキュリティ・コード体系・運用上の注意点</p>
+  </div>
+
+  <h3>雇用形態コード体系</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>コード</th><th>推定される意味</th><th>処理上の扱い</th></tr></thead>
+      <tbody>
+        <tr><td><strong>TS</strong></td><td>派遣（一般）</td><td rowspan="5">掲載店舗マスタとの突合で掲載可否を判定。<br>PL/SLは有料職業紹介として企業名チェックも実施。</td></tr>
+        <tr><td><strong>PS</strong></td><td>派遣（紹介予定）</td></tr>
+        <tr><td><strong>TP</strong></td><td>派遣（特定）</td></tr>
+        <tr><td><strong>PL</strong></td><td>有料職業紹介</td></tr>
+        <tr><td><strong>SL</strong></td><td>有料職業紹介（特定）</td></tr>
+        <tr><td><strong>その他</strong></td><td>直雇用</td><td>直雇用expシートへの出力対象。別ルートで判定。</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>非掲載判定の条件一覧</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>判定条件</th><th>対象フィールド</th><th>非掲載理由テキスト</th></tr></thead>
+      <tbody>
+        <tr><td>有料職業紹介の企業名不備</td><td>企業名(D列)</td><td>「有料職業紹介案件だが、企業名が正確ではないため」</td></tr>
+        <tr><td>職種名の文字数超過</td><td>業種(職種)備考(H列)</td><td>「職種名が適切でないため」</td></tr>
+        <tr><td>NGワード「入社祝い金」含有</td><td>求人タイトル〜福利厚生制度</td><td>「入社祝い金を含むため」（推定）</td></tr>
+        <tr><td>年齢表記NG</td><td>全テキストフィールド</td><td>「歳以上の方大歓迎」「歳以下の方大歓迎」を含む</td></tr>
+        <tr><td>最低賃金違反</td><td>給与金額(From) vs 最低賃金マスタ</td><td>「最低賃金を下回っているため」（推定）</td></tr>
+        <tr><td>仕事内容中のNGワード</td><td>仕事内容(AR列)</td><td>不可/規制あり/同時募集/他店舗/ネイルNG/タトゥーNG</td></tr>
+        <tr><td>非掲載フラグ文言に該当</td><td>抜きたい文言!J列の文言</td><td>該当文言に応じた理由</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>セキュリティ・保護状態</h3>
+  <p>
+    全10シートとも<strong>シート保護は設定されていません</strong>。VBAプロジェクトにはパスワード保護（DPBキー検出）が設定されています。
+    名前付き範囲は未使用です。
+  </p>
+
+  <h3>運用上の注意点</h3>
+
+  <ul>
+    <li>CSVシートへのデータ貼り付け時、最大25,001行（ヘッダー+データ25,000行）を想定した設計になっています。超過する場合は数式範囲の拡張が必要です。</li>
+    <li>最低賃金マスタは各都道府県の発効日に基づいて新旧を自動切替しますが、年次の最低賃金改定時にB列（新最低賃金）・C列（発効日）・F列（旧最低賃金を更新）の手動更新が必要です。</li>
+    <li>掲載店舗マスタは新店舗の開設・閉鎖に伴い手動で更新する必要があります。</li>
+    <li>「抜きたい文言」シートは、各支社が独自に追加するテンプレート文言に対応するため、継続的なメンテナンスが必要です。</li>
+    <li>VBAマクロ実行時はScreenUpdating/EnableEvents/Calculationの制御が入るため、処理中にExcelを操作しないでください。</li>
+  </ul>
+</div>
+
+</div><!-- /.container -->
+
+<div class="page-footer">
+  Excel解析レポート | 生成日: 2026-02-06
+</div>
+
+</body>
+</html>
