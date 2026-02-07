@@ -1,4 +1,3 @@
-import { sql } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-serverless';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -9,7 +8,7 @@ function getDb(): ReturnType<typeof drizzle> {
   if (!url) {
     throw new Error('POSTGRES_URL is not set');
   }
-  _db = drizzle(sql(url));
+  _db = drizzle(url);
   return _db;
 }
 
