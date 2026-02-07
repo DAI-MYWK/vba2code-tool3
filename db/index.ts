@@ -14,7 +14,7 @@ function getDb(): ReturnType<typeof drizzle> {
 
 export const db = new Proxy({} as ReturnType<typeof drizzle>, {
   get(_, prop) {
-    return (getDb() as Record<string, unknown>)[prop as string];
+    return (getDb() as unknown as Record<string, unknown>)[prop as string];
   },
 });
 export * from './schema';

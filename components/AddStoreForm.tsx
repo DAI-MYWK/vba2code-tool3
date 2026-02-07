@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { createStore } from './actions';
+import { createStore } from '@/app/admin/stores/actions';
 
 export function AddStoreForm() {
   const [isOpen, setIsOpen] = useState(false);
